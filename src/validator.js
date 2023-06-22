@@ -6,19 +6,59 @@ document.addEventListener('DOMContentLoaded', function() {
   var cardExpiration = document.querySelector('.card-expiration-date div');
   var cardCCV = document.querySelector('.ccv div');
   var cardLogoImg = document.querySelector('.card-logo-img');
-  var btn = document.querySelector('.btn');
+  var toggleFormBtn = document.getElementById("toggle-form");
+  toggleFormBtn.classList.add("toggle-form-btn");
+  var form = document.querySelector(".form");
 
-  $('.input-cart-number').on('keyup change', function(){
+  // Ocultar el formulario al cargar la página
+  form.style.display = "none";
+
+  // Función para alternar la visibilidad del formulario al hacer clic en el botón
+  toggleFormBtn.addEventListener("click", function() {
+    if (form.style.display === "none") {
+      form.style.display = "block";
+    } else {
+      form.style.display = "none";
+    }
+  });
+
+  cardNumberInputs.forEach(function(input) {
+    input.addEventListener('input', updateCardNumber);
+  });
+
+  function updateCardNumber() {
+    var cardNumberValue = cardNumberInputs.map(function(input) {
+      return input.value.padEnd(input.maxLength, '*');
+    }).join('');
+
+    cardNumber.textContent = cardNumberValue;
+
+    // Mostrar el logo correspondiente al tipo de tarjeta
+    var cardType = getCardType(cardNumberValue);
+    var logoPath;
+    if (cardType === 'Visa') {
+      logoPath = 'img/visa.png';
+    } else if (cardType === 'Mastercard') {
+      logoPath = 'img/mastercard.png';
+    } else if (cardType === 'American Express') {
+      logoPath = 'img/AmericanExpress.png';
+    } else {
+      logoPath = 'img/default.png'; // Si hay un tipo de tarjeta desconocido, puedes usar una imagen genérica o mostrar un mensaje alternativo
+    }
+    cardLogoImg.src = logoPath;
+  }
+
+  $('.input-cart-number').on('keyup change', function() {
     $t = $(this);
 
-    if ($t.val().length > 3) {
+    if ($t.val().length >= $t.attr('maxlength')) {
       $t.next().focus();
     }
 
     var card_number = '';
-    $('.input-cart-number').each(function(){
+    $('.input-cart-number').each(function() {
       card_number += $(this).val() + ' ';
-      if ($(this).val().length == 4) {
+      if ($(this).val().length == $(this).attr('maxlength')) {
         $(this).next().focus();
       }
     });
@@ -26,23 +66,22 @@ document.addEventListener('DOMContentLoaded', function() {
     $('.credit-card-box .number').html(card_number);
   });
 
-  $('#card-holder').on('keyup change', function(){
+  $('#card-holder').on('keyup change', function() {
     $t = $(this);
     $('.credit-card-box .card-holder div').html($t.val());
   });
 
-  $('#card-expiration-month, #card-expiration-year').change(function(){
-    var m = $('#card-expiration-month option').index($('#card-expiration-month option:selected'));
-    m = (m < 10) ? '0' + m : m;
-    var y = $('#card-expiration-year').val().substr(2,2);
+  $('#card-expiration-month, #card-expiration-year').change(function() {
+    var m = $('#card-expiration-month option:selected').text();
+    var y = $('#card-expiration-year').val().substr(2, 2);
     $('.card-expiration-date div').html(m + '/' + y);
   });
 
-  $('#card-ccv').on('focus', function(){
+  $('#card-ccv').on('focus', function() {
     $('.credit-card-box').addClass('hover');
-  }).on('blur', function(){
+  }).on('blur', function() {
     $('.credit-card-box').removeClass('hover');
-  }).on('keyup change', function(){
+  }).on('keyup change', function() {
     $('.ccv div').html($(this).val());
   });
 
@@ -173,8 +212,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Agregar evento de clic al botón
-  btn.addEventListener('click', function(event) {
+  // Agregar evento de clic al botón de validar
+  var validateBtn = document.querySelector(".btn");
+  validateBtn.addEventListener('click', function(event) {
     event.preventDefault();
     validateCreditCard();
   });
